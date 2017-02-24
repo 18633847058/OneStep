@@ -16,6 +16,8 @@ public interface ZhiHuDailyContract {
 		void showError();
 		//显示正在加载
 		void showLoading();
+		//停止加载
+		void stopLoading();
 		//成功获取到数据后，在界面中显示
 		void showResults(ArrayList<ZhihuDailyNews.StoriesBean> list);
 		//显示用于加载指定日期的date picker dialog
