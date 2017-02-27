@@ -6,18 +6,18 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.widget.Toast;
 
+import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.yang.eric.onestep.Api;
 import com.yang.eric.onestep.contract.ZhiHuDailyContract;
 import com.yang.eric.onestep.model.bean.ZhihuDailyNews;
 import com.yang.eric.onestep.model.database.DatabaseHelper;
-import com.yang.eric.onestep.model.https.HttpsUtils;
 import com.yang.eric.onestep.model.https.OnStringListener;
+import com.yang.eric.onestep.model.https.StringModelImpl;
 import com.yang.eric.onestep.util.DateFormatter;
 import com.yang.eric.onestep.util.NetworkState;
 
-import java.io.Reader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,7 +33,7 @@ public class ZhihuDailyPresenter implements ZhiHuDailyContract.Presenter {
 
 	private ZhiHuDailyContract.View view;
 	private Context context;
-	private HttpsUtils httpsUtils;
+	private StringModelImpl model;
 
 	private DateFormatter formatter = new DateFormatter();
 	private Gson gson = new Gson();
@@ -47,7 +47,7 @@ public class ZhihuDailyPresenter implements ZhiHuDailyContract.Presenter {
 		this.context = context;
 		this.view = view;
 		this.view.setPresenter(this);
-		httpsUtils = HttpsUtils.getInstance();
+		model = new StringModelImpl(context);
 		databaseHelper = new DatabaseHelper(context, "History.db", null, 5);
 		database = databaseHelper.getWritableDatabase();
 	}
@@ -59,9 +59,9 @@ public class ZhihuDailyPresenter implements ZhiHuDailyContract.Presenter {
 		}
 
 		if(NetworkState.networkConnected(context)){
-			httpsUtils.doGet(Api.ZHIHU_HISTORY + formatter.ZhihuDailyDateFormat(date), new OnStringListener() {
+			model.load(Api.ZHIHU_HISTORY + formatter.ZhihuDailyDateFormat(date), new OnStringListener() {
 				@Override
-				public void onSuccess(Reader result) {
+				public void onSuccess(String result) {
 					try {
 						ZhihuDailyNews post = gson.fromJson(result, ZhihuDailyNews.class);
 						ContentValues values = new ContentValues();
@@ -95,12 +95,14 @@ public class ZhihuDailyPresenter implements ZhiHuDailyContract.Presenter {
 					} catch (JsonSyntaxException e) {
 						view.showError();
 					}
-					view.showLoading();
+					//一直加载的问题
+					view.stopLoading();
 				}
 
 				@Override
-				public void onError() {
-					view.showLoading();
+				public void onError(VolleyError error) {
+					//一直加载的问题
+					view.stopLoading();
 					view.showError();
 				}
 			});

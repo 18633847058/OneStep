@@ -108,6 +108,9 @@ public class ZhihuDailyFragment extends Fragment implements ZhiHuDailyContract.V
 		recyclerView = (RecyclerView) view.findViewById(R.id.recycleView);
 		recyclerView.setHasFixedSize(true);
 
+		//修复不显示数据的问题
+		recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
 		refresh = (SwipeRefreshLayout) view.findViewById(R.id.refreshLayout);
 		//设置下拉刷新的按钮的颜色
 		refresh.setColorSchemeResources(R.color.colorPrimary);
